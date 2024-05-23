@@ -1,8 +1,5 @@
 package org.ayush.expertai.controllers;
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.ChatClient;
 import org.springframework.ai.chat.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -18,27 +15,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping(value = "/expert")
-public class ExpertAIController
-{
+@RequestMapping("/mood")
+public class MoodAiController {
 
-    private static final Logger log = LoggerFactory.getLogger(ExpertAIController.class);
-    public final ChatClient chatClient;
+    private final ChatClient chatClient;
 
-    @Value("classpath:/prompts/expert.st")
-    private Resource expertPromptStr;
-
-    public ExpertAIController(ChatClient chatClient) {
+    public MoodAiController(ChatClient chatClient) {
         this.chatClient = chatClient;
     }
 
+    @Value("classpath:/prompts/mood.st")
+    private Resource moodPrompt;
+
 
     @GetMapping
-    public String expertOpinion(@RequestParam String question, @RequestParam String expert){
-        PromptTemplate promptTemplate = new PromptTemplate(expertPromptStr);
+    public String getRecommendationBasedOnMood(@RequestParam String mood){
+        PromptTemplate promptTemplate = new PromptTemplate(moodPrompt);
         Map<String, Object> map = new HashMap<>();
-        map.put("expert",expert);
-        map.put("question",question);
+        map.put("mood",mood);
         Prompt prompt = promptTemplate.create(map);
         ChatResponse response = chatClient.call(prompt);
         return response.getResult().getOutput().getContent();
