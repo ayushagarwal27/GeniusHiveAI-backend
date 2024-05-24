@@ -1,40 +1,29 @@
 package org.ayush.expertai.controllers;
 
-import org.springframework.ai.chat.ChatClient;
-import org.springframework.ai.chat.ChatResponse;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
+import org.ayush.expertai.dtos.MoodResponseDto;
+import org.ayush.expertai.services.MoodService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/mood")
 public class MoodAiController {
 
-    private final ChatClient chatClient;
+    private final MoodService moodService;
 
-    public MoodAiController(ChatClient chatClient) {
-        this.chatClient = chatClient;
+    public MoodAiController(MoodService moodService) {
+        this.moodService = moodService;
     }
 
-    @Value("classpath:/prompts/mood.st")
-    private Resource moodPrompt;
-
-
     @GetMapping
-    public String getRecommendationBasedOnMood(@RequestParam String mood){
-        PromptTemplate promptTemplate = new PromptTemplate(moodPrompt);
-        Map<String, Object> map = new HashMap<>();
-        map.put("mood",mood);
-        Prompt prompt = promptTemplate.create(map);
-        ChatResponse response = chatClient.call(prompt);
-        return response.getResult().getOutput().getContent();
+    public ResponseEntity<MoodResponseDto> getRecommendationBasedOnMood(@RequestParam String mood){
+        String moodRecommendations = moodService.getRecommendationBasedOnMood(mood);
+        MoodResponseDto moodResponseDto = new MoodResponseDto();
+        moodResponseDto.setMoodRecommendations(moodRecommendations);
+        return ResponseEntity.ok().body(moodResponseDto);
     }
 }
